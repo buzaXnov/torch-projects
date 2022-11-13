@@ -1,36 +1,49 @@
 import math
-
 import torch
 import torchvision
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 import numpy as np
 
+
 # 0) prepare dataset
 class WineDataset(Dataset):
-    def __init__(self):
+    def __init__(self, transform=None):
         # data loading
         xy = np.loadtxt(fname="./data/wine/wine.csv", delimiter=',', dtype=np.float32, skiprows=1)
         self.x = xy[:, 1:]
-        self.y = xy[:, [0]]     # (n_samples, 1) - shape of the array after putting the 0 in brackets
+        self.y = xy[:, [0]]  # (n_samples, 1) - shape of the array after putting the 0 in brackets
         self.n_samples = xy.shape[0]
         self.n_features = xy.shape[1]
 
+        self.transform = transform
+
     def __getitem__(self, index):
         # retrieve item; indexing
-        return self.x[index], self.y[index]
+        sample = self.x[index], self.y[index]
+
+        if self.transform:
+            sample = self.transform(sample)
+
+        return sample
 
     def __len__(self):
         # len(dataset)
         return self.n_samples
 
 
-dataset = WineDataset()
+class ToTensor:
+    def __call__(self, sample):
+        inputs, target = sample
+        return torch.from_numpy(inputs), torch.from_numpy(target)
+
+
+dataset = WineDataset(transform=ToTensor())
 dataloader = DataLoader(dataset=dataset, batch_size=4, shuffle=True, num_workers=2)
 dataiter = iter(dataloader)
 data = next(dataiter)
 features, label = data
-# print(features, label)
+print(features, label)
 
 # 1) prepare model
 
@@ -39,12 +52,12 @@ features, label = data
 # 3) training loop
 num_epochs = 10
 total_samples = len(dataset)
-n_iters = math.ceil(total_samples/dataloader.batch_size)
+n_iters = math.ceil(total_samples / dataloader.batch_size)
 for epoch in range(num_epochs):
     for i, (inputs, labels) in enumerate(dataloader):
         # forward and backward pass, update
-        if not (i+1) % 5:
-            print(f"Epoch {epoch+1}/{num_epochs}: Step {i+1}/{n_iters}, inputs {inputs.shape}")
+        if not (i + 1) % 5:
+            print(f"Epoch {epoch + 1}/{num_epochs}: Step {i + 1}/{n_iters}, inputs {inputs.shape}")
 
 # torchvision.datasets.MNIST()
 # torchvision.datasets.FashionMNIST()
