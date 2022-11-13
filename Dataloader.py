@@ -34,17 +34,34 @@ class WineDataset(Dataset):
 
 class ToTensor:
     def __call__(self, sample):
-        inputs, target = sample
-        return torch.from_numpy(inputs), torch.from_numpy(target)
+        inputs, targets = sample
+        return torch.from_numpy(inputs), torch.from_numpy(targets)
+
+
+class MulTransform:
+    def __init__(self, factor):
+        self.factor = factor
+
+    def __call__(self, sample):
+        inputs, targets = sample
+        inputs *= self.factor
+        return inputs, targets
 
 
 dataset = WineDataset(transform=ToTensor())
-dataloader = DataLoader(dataset=dataset, batch_size=4, shuffle=True, num_workers=2)
-dataiter = iter(dataloader)
-data = next(dataiter)
-features, label = data
+# dataset = WineDataset(transform=None)
+# dataloader = DataLoader(dataset=dataset, batch_size=4, shuffle=True, num_workers=2)
+# dataiter = iter(dataloader)
+# data = next(dataiter)
+features, label = dataset[0]
+print(features, label, end="\n\n")
+
+composed = torchvision.transforms.Compose([ToTensor(), MulTransform(4)])
+new_dataset = WineDataset(transform=composed)
+features, label = new_dataset[0]
 print(features, label)
 
+exit(1)
 # 1) prepare model
 
 # 2) loss and optimizer
