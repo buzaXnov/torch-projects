@@ -1,9 +1,12 @@
+import math
+
 import torch
 import torchvision
 import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset
 import numpy as np
 
+# 0) prepare dataset
 class WineDataset(Dataset):
     def __init__(self):
         # data loading
@@ -23,4 +26,25 @@ class WineDataset(Dataset):
 
 
 dataset = WineDataset()
-first = 
+dataloader = DataLoader(dataset=dataset, batch_size=4, shuffle=True, num_workers=2)
+dataiter = iter(dataloader)
+data = next(dataiter)
+features, label = data
+# print(features, label)
+
+# 1) prepare model
+
+# 2) loss and optimizer
+
+# 3) training loop
+num_epochs = 10
+total_samples = len(dataset)
+n_iters = math.ceil(total_samples/dataloader.batch_size)
+for epoch in range(num_epochs):
+    for i, (inputs, labels) in enumerate(dataloader):
+        # forward and backward pass, update
+        if not (i+1) % 5:
+            print(f"Epoch {epoch+1}/{num_epochs}: Step {i+1}/{n_iters}, inputs {inputs.shape}")
+
+# torchvision.datasets.MNIST()
+# torchvision.datasets.FashionMNIST()
